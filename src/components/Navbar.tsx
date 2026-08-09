@@ -1,29 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X, ArrowUpRight, ArrowUp } from "lucide-react";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Menu, X, ArrowUpRight, ArrowUp, Code } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const pathname = usePathname();
 
-  const { scrollY } = useScroll();
+  // Pantau posisi scroll untuk menampilkan FAB hanya saat halaman digulir ke bawah
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
 
-  // Deteksi posisi guliran layar
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    // Jika digulir ke bawah melebihi 50px, sembunyikan navbar
-    if (latest > 50) {
-      setHidden(true);
-      setIsOpen(false); // Tutup menu mobile jika sedang terbuka saat scroll
-    } else {
-      // Hanya muncul kembali saat berada di paling atas halaman (<= 10px)
-      setHidden(false);
-    }
-  });
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  // Fungsi untuk kembali ke paling atas layar
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -31,111 +31,98 @@ export default function Navbar() {
     });
   };
 
-  const navLinks = [
-    { name: "Beranda", href: "/" },
-    { name: "Profil", href: "/profil" },
-    { name: "Potensi", href: "/potensi" },
-    { name: "Galeri", href: "/galeri" },
-  ];
+const navLinks = [
+  { name: "BERANDA", href: "/" },
+  { name: "PROYEK", href: "/proyek" }, // Mengarah ke /proyek
+  { name: "TENTANG", href: "/tentang" },
+  { name: "JURNAL", href: "/jurnal" },
+];
 
   return (
     <>
-      {/* Header / Navbar utama */}
-      <motion.header
-        variants={{
-          visible: { y: 0, opacity: 1 },
-          hidden: { y: "-100%", opacity: 0 },
-        }}
-        animate={hidden ? "hidden" : "visible"}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 px-4 py-4"
-      >
-        <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl px-5 py-3 flex justify-between items-center shadow-sm">
+      {/* Header / Navbar Utama */}
+      <header className="sticky top-0 left-0 right-0 z-50 px-2 sm:px-4 py-3 bg-white border-b-4 border-black">
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
           
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform" />
-            <span className="font-semibold text-slate-900 tracking-tight text-sm font-mono uppercase">
-              Derik.
-            </span>
+          {/* Brand Logo Box */}
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 bg-emerald-300 border-2 border-black px-3 py-1.5 font-mono font-black text-sm uppercase tracking-wider text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+          >
+            <Code size={16} />
+            <span>D.GALIH</span>
           </Link>
 
-          {/* Desktop Menu Minimalis */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-xs font-mono uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-2">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`font-mono text-xs font-bold uppercase tracking-wider px-3 py-1.5 border-2 transition-all ${
+                    isActive 
+                      ? "bg-yellow-300 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" 
+                      : "border-transparent text-black hover:border-black hover:bg-yellow-200"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Action Link Minimalis */}
+          {/* Action Link Button */}
           <div className="hidden md:block">
-            <Link
-              href="/profil"
-              className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-slate-900 hover:text-emerald-600 transition-colors"
+            <a
+              href="mailto:contact@dimasgalih.dev"
+              className="inline-flex items-center gap-1.5 bg-black text-white font-mono text-xs font-bold uppercase tracking-wider px-4 py-2 border-2 border-black shadow-[3px_3px_0px_0px_rgba(253,224,71,1)] hover:bg-yellow-300 hover:text-black transition-all"
             >
-              Eksplorasi
-              <ArrowUpRight size={13} />
-            </Link>
+              <span>HUBUNGI</span>
+              <ArrowUpRight size={14} />
+            </a>
           </div>
 
-          {/* Mobile Toggle Button */}
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-1 text-slate-700 hover:text-slate-900 focus:outline-none"
+            className="md:hidden p-2 bg-black text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none"
             aria-label="Toggle Menu"
           >
-            {isOpen ? <X size={18} /> : <Menu size={18} />}
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
         {/* Mobile Menu Dropdown */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden max-w-5xl mx-auto mt-2 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-lg flex flex-col gap-1"
-            >
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-mono text-xs uppercase tracking-wider p-3 rounded-xl transition-all flex items-center justify-between"
-                >
-                  <span>{link.name}</span>
-                  <ArrowUpRight size={12} className="text-slate-400" />
-                </Link>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-
-      {/* FAB (Floating Action Button) Scroll-to-Top di Kanan Bawah */}
-      <AnimatePresence>
-        {hidden && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            onClick={scrollToTop}
-            aria-label="Kembali ke atas"
-            className="fixed bottom-6 right-6 z-50 p-3.5 bg-slate-900/90 hover:bg-slate-950 text-white rounded-full shadow-md backdrop-blur-md border border-white/10 transition-colors focus:outline-none group"
-          >
-            <ArrowUp size={16} className="group-hover:-translate-y-0.5 transition-transform" />
-          </motion.button>
+        {isOpen && (
+          <div className="md:hidden max-w-5xl mx-auto mt-3 bg-cyan-200 border-3 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="bg-white border-2 border-black font-mono text-xs font-black uppercase tracking-wider p-3 hover:bg-black hover:text-white transition-all flex items-center justify-between"
+              >
+                <span>{link.name}</span>
+                <ArrowUpRight size={14} />
+              </Link>
+            ))}
+          </div>
         )}
-      </AnimatePresence>
+      </header>
+
+      {/* FAB (Floating Action Button) Scroll-to-Top (Hanya muncul jika scroll > 200px) */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Kembali ke atas"
+          className="fixed bottom-5 right-5 z-50 p-3 bg-emerald-300 text-black border-3 border-black font-mono font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-300 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all focus:outline-none"
+        >
+          <ArrowUp size={20} />
+        </button>
+      )}
     </>
   );
 }

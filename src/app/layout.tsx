@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="id">
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-slate-200">
         <Navbar />
-        <main className="pt-28 pb-16 px-4 max-w-5xl mx-auto">
+       <main className="pt-4 px-4 sm:px-6">
           {children}
         </main>
       </body>
